@@ -360,7 +360,7 @@
         </member>
         <member name="M:PharmeasyAPI.Controllers.DoctorUnavailabilitiesController.CreateForDoctor(PharmeasyAPI.DTOs.CreateDoctorUnavailabilityRequest)">
             <summary>Add an unavailability block for the authenticated doctor's own schedule.</summary>
-            <remarks>Time format: <c>HH:mm-HH:mm</c> (e.g. <c>18:00-21:00</c>). End time must be after start time.</remarks>
+            <remarks>startTime and endTime must be in <c>HH:mm</c> format. endTime must be after startTime.</remarks>
             <response code="200">Unavailability block created and returned.</response>
             <response code="400">Invalid time format or end time not after start time.</response>
             <response code="401">Missing or invalid JWT.</response>
@@ -369,7 +369,7 @@
         </member>
         <member name="M:PharmeasyAPI.Controllers.DoctorUnavailabilitiesController.CreateForDoctorAdmin(PharmeasyAPI.DTOs.CreateDoctorUnavailabilityAdminRequest)">
             <summary>Add an unavailability block for any doctor by profile ID. (Admin only)</summary>
-            <remarks>Time format: <c>HH:mm-HH:mm</c> (e.g. <c>18:00-21:00</c>).</remarks>
+            <remarks>startTime and endTime must be in <c>HH:mm</c> format. endTime must be after startTime.</remarks>
             <response code="200">Unavailability block created and returned.</response>
             <response code="400">Invalid time format.</response>
             <response code="401">Missing or invalid JWT.</response>

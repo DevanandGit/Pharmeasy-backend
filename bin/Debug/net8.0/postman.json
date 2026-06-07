@@ -724,9 +724,19 @@
                     "Carts"
                 ],
                 "summary": "Retrieve the current user's cart with all items and the recalculated total.",
+                "parameters": [
+                    {
+                        "name": "couponName",
+                        "in": "query",
+                        "description": "Optional coupon code to preview the discounted total (coupon is NOT applied or recorded).",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Cart with items and total price."
+                        "description": "Cart with items and total price. When a valid coupon is supplied, includes a `couponPreview` object with the discount breakdown."
                     },
                     "401": {
                         "description": "Missing or invalid JWT.",
@@ -2199,7 +2209,7 @@
                     "DoctorUnavailabilities"
                 ],
                 "summary": "Add an unavailability block for the authenticated doctor's own schedule.",
-                "description": "Time format: `HH:mm-HH:mm` (e.g. `18:00-21:00`). End time must be after start time.",
+                "description": "startTime and endTime must be in `HH:mm` format. endTime must be after startTime.",
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -2335,7 +2345,7 @@
                     "DoctorUnavailabilities"
                 ],
                 "summary": "Add an unavailability block for any doctor by profile ID. (Admin only)",
-                "description": "Time format: `HH:mm-HH:mm` (e.g. `18:00-21:00`).",
+                "description": "startTime and endTime must be in `HH:mm` format. endTime must be after startTime.",
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -4101,7 +4111,8 @@
             "CreateDoctorUnavailabilityAdminRequest": {
                 "required": [
                     "doctorProfileId",
-                    "time",
+                    "endTime",
+                    "startTime",
                     "weekday"
                 ],
                 "type": "object",
@@ -4109,7 +4120,11 @@
                     "weekday": {
                         "$ref": "#/components/schemas/Weekday"
                     },
-                    "time": {
+                    "startTime": {
+                        "minLength": 1,
+                        "type": "string"
+                    },
+                    "endTime": {
                         "minLength": 1,
                         "type": "string"
                     },
@@ -4122,7 +4137,8 @@
             },
             "CreateDoctorUnavailabilityRequest": {
                 "required": [
-                    "time",
+                    "endTime",
+                    "startTime",
                     "weekday"
                 ],
                 "type": "object",
@@ -4130,7 +4146,11 @@
                     "weekday": {
                         "$ref": "#/components/schemas/Weekday"
                     },
-                    "time": {
+                    "startTime": {
+                        "minLength": 1,
+                        "type": "string"
+                    },
+                    "endTime": {
                         "minLength": 1,
                         "type": "string"
                     }
@@ -4343,7 +4363,11 @@
                     "weekday": {
                         "$ref": "#/components/schemas/Weekday"
                     },
-                    "time": {
+                    "startTime": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "endTime": {
                         "type": "string",
                         "nullable": true
                     }

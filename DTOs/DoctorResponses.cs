@@ -15,6 +15,7 @@ public class DoctorResponseDto
     public decimal ConsultationFee { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+    public List<DoctorWeekdayAvailabilityDto> WeeklyAvailability { get; set; } = new();
 }
 
 public class DoctorSlotDto

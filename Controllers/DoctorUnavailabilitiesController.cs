@@ -22,7 +22,7 @@ public class DoctorUnavailabilitiesController : ControllerBase
     }
 
     /// <summary>Add an unavailability block for the authenticated doctor's own schedule.</summary>
-    /// <remarks>Time format: <c>HH:mm-HH:mm</c> (e.g. <c>18:00-21:00</c>). End time must be after start time.</remarks>
+    /// <remarks>startTime and endTime must be in <c>HH:mm</c> format. endTime must be after startTime.</remarks>
     /// <response code="200">Unavailability block created and returned.</response>
     /// <response code="400">Invalid time format or end time not after start time.</response>
     /// <response code="401">Missing or invalid JWT.</response>
@@ -41,17 +41,20 @@ public class DoctorUnavailabilitiesController : ControllerBase
         if (userIdClaim is null || !int.TryParse(userIdClaim, out int userId))
             return Unauthorized();
 
-        var profile = await _db.DoctorProfiles.FirstOrDefaultAsync(dp => dp.UserId == userId);
+        var profile = await _db.DoctorProfiles
+            .Include(dp => dp.User)
+            .FirstOrDefaultAsync(dp => dp.UserId == userId);
         if (profile is null)
             return NotFound(new { message = "Doctor profile not found." });
 
-        var (startTime, endTime, error) = ParseTime(request.Time);
+        var (startTime, endTime, error) = ParseTime(request.StartTime, request.EndTime);
         if (error is not null)
             return BadRequest(new { message = error });
 
         var entity = new DoctorUnAvailability
         {
             DoctorProfileId = profile.Id,
+            DoctorProfile = profile,
             Weekday = request.Weekday,
             StartTime = startTime,
             EndTime = endTime
@@ -64,7 +67,7 @@ public class DoctorUnavailabilitiesController : ControllerBase
     }
 
     /// <summary>Add an unavailability block for any doctor by profile ID. (Admin only)</summary>
-    /// <remarks>Time format: <c>HH:mm-HH:mm</c> (e.g. <c>18:00-21:00</c>).</remarks>
+    /// <remarks>startTime and endTime must be in <c>HH:mm</c> format. endTime must be after startTime.</remarks>
     /// <response code="200">Unavailability block created and returned.</response>
     /// <response code="400">Invalid time format.</response>
     /// <response code="401">Missing or invalid JWT.</response>
@@ -85,13 +88,14 @@ public class DoctorUnavailabilitiesController : ControllerBase
         if (profile is null)
             return NotFound(new { message = "Doctor profile not found." });
 
-        var (startTime, endTime, error) = ParseTime(request.Time);
+        var (startTime, endTime, error) = ParseTime(request.StartTime, request.EndTime);
         if (error is not null)
             return BadRequest(new { message = error });
 
         var entity = new DoctorUnAvailability
         {
             DoctorProfileId = profile.Id,
+            DoctorProfile = profile,
             Weekday = request.Weekday,
             StartTime = startTime,
             EndTime = endTime
@@ -213,9 +217,11 @@ public class DoctorUnavailabilitiesController : ControllerBase
         if (request.Weekday.HasValue)
             entity.Weekday = request.Weekday.Value;
 
-        if (!string.IsNullOrWhiteSpace(request.Time))
+        if (!string.IsNullOrWhiteSpace(request.StartTime) || !string.IsNullOrWhiteSpace(request.EndTime))
         {
-            var (startTime, endTime, error) = ParseTime(request.Time);
+            var start = request.StartTime ?? entity.StartTime.ToString(@"hh\:mm");
+            var end = request.EndTime ?? entity.EndTime.ToString(@"hh\:mm");
+            var (startTime, endTime, error) = ParseTime(start, end);
             if (error is not null)
                 return BadRequest(new { message = error });
             entity.StartTime = startTime;
@@ -270,22 +276,30 @@ public class DoctorUnavailabilitiesController : ControllerBase
         return profile is not null && profile.Id == entity.DoctorProfileId;
     }
 
-    private static (TimeSpan startTime, TimeSpan endTime, string? error) ParseTime(string time)
+    private static (TimeSpan startTime, TimeSpan endTime, string? error) ParseTime(string startRaw, string endRaw)
     {
-        var parts = time.Split('-');
-        if (parts.Length != 2)
-            return (default, default, "Time must be in format 'HH:mm-HH:mm'.");
+        var startTime = ParseHHmm(startRaw);
+        if (startTime is null)
+            return (default, default, "Invalid startTime. Use HH:mm format (00:00–24:00).");
 
-        if (!TimeSpan.TryParse(parts[0], out var startTime))
-            return (default, default, "Invalid start time.");
-
-        if (!TimeSpan.TryParse(parts[1], out var endTime))
-            return (default, default, "Invalid end time.");
+        var endTime = ParseHHmm(endRaw);
+        if (endTime is null)
+            return (default, default, "Invalid endTime. Use HH:mm format (00:00–24:00).");
 
         if (endTime <= startTime)
-            return (default, default, "End time must be after start time.");
+            return (default, default, "endTime must be after startTime.");
 
-        return (startTime, endTime, null);
+        return (startTime.Value, endTime.Value, null);
+    }
+
+    private static TimeSpan? ParseHHmm(string s)
+    {
+        var parts = s.Split(':');
+        if (parts.Length != 2) return null;
+        if (!int.TryParse(parts[0], out int h) || !int.TryParse(parts[1], out int m)) return null;
+        if (h < 0 || h > 24 || m < 0 || m > 59) return null;
+        if (h == 24 && m != 0) return null;
+        return new TimeSpan(h, m, 0);
     }
 
     private DoctorUnavailabilityResponseDto MapResponse(DoctorUnAvailability entity)

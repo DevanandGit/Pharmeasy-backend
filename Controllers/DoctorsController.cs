@@ -87,6 +87,7 @@ public class DoctorsController : ControllerBase
     {
         var profile = await _db.DoctorProfiles
             .Include(dp => dp.User)
+            .Include(dp => dp.Unavailabilities)
             .FirstOrDefaultAsync(dp => dp.Id == id);
 
         if (profile is null)
@@ -161,6 +162,7 @@ public class DoctorsController : ControllerBase
     {
         var profile = await _db.DoctorProfiles
             .Include(dp => dp.User)
+            .Include(dp => dp.Unavailabilities)
             .FirstOrDefaultAsync(dp => dp.Id == id);
 
         if (profile is null)
@@ -184,6 +186,7 @@ public class DoctorsController : ControllerBase
     {
         var paged = await _db.DoctorProfiles
             .Include(dp => dp.User)
+            .Include(dp => dp.Unavailabilities)
             .OrderByDescending(dp => dp.CreatedAt)
             .PaginateAsync(page, limit);
 
@@ -328,6 +331,7 @@ public class DoctorsController : ControllerBase
         Experience = profile.Experience,
         ConsultationFee = profile.ConsultationFee,
         CreatedAt = profile.CreatedAt,
-        UpdatedAt = profile.UpdatedAt
+        UpdatedAt = profile.UpdatedAt,
+        WeeklyAvailability = ComputeWeeklyAvailability(profile.Unavailabilities)
     };
 }

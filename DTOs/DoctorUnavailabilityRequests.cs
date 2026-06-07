@@ -9,7 +9,10 @@ public class CreateDoctorUnavailabilityRequest
     public Weekday Weekday { get; set; }
 
     [Required]
-    public string Time { get; set; } = string.Empty;
+    public string StartTime { get; set; } = string.Empty;
+
+    [Required]
+    public string EndTime { get; set; } = string.Empty;
 }
 
 public class CreateDoctorUnavailabilityAdminRequest : CreateDoctorUnavailabilityRequest
@@ -21,5 +24,6 @@ public class CreateDoctorUnavailabilityAdminRequest : CreateDoctorUnavailability
 public class PatchDoctorUnavailabilityRequest
 {
     public Weekday? Weekday { get; set; }
-    public string? Time { get; set; }
+    public string? StartTime { get; set; }
+    public string? EndTime { get; set; }
 }
