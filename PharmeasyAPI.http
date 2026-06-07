@@ -1,0 +1,6 @@
+@PharmeasyAPI_HostAddress = http://localhost:5074
+
+GET {{PharmeasyAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,724 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>PharmeasyAPI</name>
+    </assembly>
+    <members>
+        <member name="T:PharmeasyAPI.Controllers.AuthController">
+            <summary>OTP-based authentication for customers, admins, and doctors.</summary>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.AuthController.SendOtp(PharmeasyAPI.DTOs.SendOtpRequest)">
+            <summary>Send a one-time password to the given email address.</summary>
+            <remarks>Creates a new user record if the email is not registered. OTP expires in 10 minutes.</remarks>
+            <response code="200">OTP sent successfully.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.AuthController.VerifyOtpCustomer(PharmeasyAPI.DTOs.VerifyOtpRequest)">
+            <summary>Verify an OTP and sign in as a Customer.</summary>
+            <remarks>Returns a JWT token scoped to the Customer role on success.</remarks>
+            <response code="200">JWT token and user info returned.</response>
+            <response code="400">Invalid or expired OTP, or email not found.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.AuthController.VerifyOtpAdmin(PharmeasyAPI.DTOs.VerifyOtpRequest)">
+            <summary>Verify an OTP and sign in as an Admin.</summary>
+            <remarks>Returns a JWT token scoped to the Admin role on success.</remarks>
+            <response code="200">JWT token and user info returned.</response>
+            <response code="400">Invalid or expired OTP, or email not found.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.AuthController.VerifyOtpDoctor(PharmeasyAPI.DTOs.VerifyOtpRequest)">
+            <summary>Verify an OTP and sign in as a Doctor.</summary>
+            <remarks>Returns a JWT token scoped to the Doctor role on success.</remarks>
+            <response code="200">JWT token and user info returned.</response>
+            <response code="400">Invalid or expired OTP, or email not found.</response>
+        </member>
+        <member name="T:PharmeasyAPI.Controllers.BlogsController">
+            <summary>Blog/article content management.</summary>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.BlogsController.Create(PharmeasyAPI.DTOs.CreateBlogRequest)">
+            <summary>Create a new blog post. (Admin only)</summary>
+            <response code="200">Blog post created and returned.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Caller is not an Admin.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.BlogsController.GetAll(System.Int32,System.Int32)">
+            <summary>List all blog posts, newest first.</summary>
+            <param name="page">Page number (default 1).</param>
+            <param name="limit">Items per page, 1–100 (default 20).</param>
+            <response code="200">Paginated list of blog posts.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.BlogsController.GetById(System.Int32)">
+            <summary>Retrieve a single blog post by ID.</summary>
+            <param name="id">Blog post ID.</param>
+            <response code="200">Blog post found and returned.</response>
+            <response code="404">No blog post with the given ID.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.BlogsController.Patch(System.Int32,PharmeasyAPI.DTOs.PatchBlogRequest)">
+            <summary>Partially update a blog post (only supplied fields are changed). (Admin only)</summary>
+            <param name="id">Blog post ID.</param>
+            <response code="200">Blog post updated and returned.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Caller is not an Admin.</response>
+            <response code="404">No blog post with the given ID.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.BlogsController.Delete(System.Int32)">
+            <summary>Delete a blog post by ID. (Admin only)</summary>
+            <param name="id">Blog post ID.</param>
+            <response code="200">Blog post deleted.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Caller is not an Admin.</response>
+            <response code="404">No blog post with the given ID.</response>
+        </member>
+        <member name="T:PharmeasyAPI.Controllers.BookingCheckoutController">
+            <summary>Initiate a doctor-appointment booking and collect payment via Razorpay.</summary>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.BookingCheckoutController.CheckoutBooking(PharmeasyAPI.DTOs.BookingCheckoutRequest)">
+             <summary>Initiate a doctor-appointment booking and create a Razorpay payment link.</summary>
+             <remarks>
+             **Flow:**
+             1. Validates the doctor exists and is active.
+             2. Parses the time slot string (format: <c>HH:mm-HH:mm</c>, e.g. <c>09:00-09:30</c>).
+             3. Creates a pending <c>BookingSession</c> with a JSON snapshot of the booking data.
+             4. Calls the Razorpay API to generate a payment link for the consultation fee.
+             5. Returns all booking details plus the Razorpay <c>paymentLinkUrl</c>.
+            
+             The actual <c>Booking</c> record is only created after Razorpay fires the
+             <c>payment_link.paid</c> webhook to <c>POST /checkout/razorpay/webhook</c>.
+             </remarks>
+             <response code="200">Booking session created; returns booking details and Razorpay payment URL.</response>
+             <response code="400">Invalid time slot format, or customer profile not found.</response>
+             <response code="401">Missing or invalid JWT.</response>
+             <response code="404">Doctor not found or inactive.</response>
+             <response code="500">Razorpay payment link creation failed.</response>
+        </member>
+        <member name="T:PharmeasyAPI.Controllers.BookingsController">
+            <summary>View confirmed appointment bookings.</summary>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.BookingsController.GetCustomerBookings(System.Int32,System.Int32)">
+            <summary>List the authenticated customer's bookings, newest appointment first.</summary>
+            <param name="page">Page number (default 1).</param>
+            <param name="limit">Items per page, 1–100 (default 20).</param>
+            <response code="200">Paginated list of the customer's bookings.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Caller is not a Customer.</response>
+            <response code="404">Customer profile not found.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.BookingsController.GetDoctorBookings(System.Int32,System.Int32)">
+            <summary>List the authenticated doctor's bookings, newest appointment first.</summary>
+            <param name="page">Page number (default 1).</param>
+            <param name="limit">Items per page, 1–100 (default 20).</param>
+            <response code="200">Paginated list of the doctor's bookings.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Caller is not a Doctor.</response>
+            <response code="404">Doctor profile not found.</response>
+        </member>
+        <member name="T:PharmeasyAPI.Controllers.CartsController">
+            <summary>Shopping cart management for the authenticated user.</summary>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.CartsController.AddToCart(PharmeasyAPI.DTOs.AddToCartRequest)">
+            <summary>Add a product to the cart (or increase its quantity if already present).</summary>
+            <response code="200">Updated cart with all items and recalculated total.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="404">Product not found.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.CartsController.RemoveFromCart(PharmeasyAPI.DTOs.RemoveFromCartRequest)">
+            <summary>Remove a product from the cart (or decrease its quantity).</summary>
+            <remarks>If <c>quantity</c> is omitted or equals/exceeds the current quantity the item is removed entirely.</remarks>
+            <response code="200">Updated cart after removal.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="404">Cart or product not found.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.CartsController.GetCart">
+            <summary>Retrieve the current user's cart with all items and the recalculated total.</summary>
+            <response code="200">Cart with items and total price.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="404">No active cart for this user.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.CartsController.DeleteCart">
+            <summary>Delete the current user's entire cart and all its items.</summary>
+            <response code="200">Cart deleted.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="404">No active cart for this user.</response>
+        </member>
+        <member name="T:PharmeasyAPI.Controllers.CategoriesController">
+            <summary>CRUD management for product categories.</summary>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.CategoriesController.Create(PharmeasyAPI.DTOs.CreateCategoryRequest)">
+            <summary>Create a new product category. (Admin only)</summary>
+            <response code="200">Category created and returned.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Caller is not an Admin.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.CategoriesController.GetAll(System.Int32,System.Int32)">
+            <summary>Retrieve all categories, each including their associated products.</summary>
+            <param name="page">Page number (default 1).</param>
+            <param name="limit">Items per page, 1–100 (default 20).</param>
+            <response code="200">Paginated, alphabetically ordered list of categories.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.CategoriesController.GetById(System.Int32)">
+            <summary>Retrieve a single category by ID, including its products.</summary>
+            <param name="id">Category ID.</param>
+            <response code="200">Category found and returned.</response>
+            <response code="404">No category with the given ID.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.CategoriesController.Update(System.Int32,PharmeasyAPI.DTOs.UpdateCategoryRequest)">
+            <summary>Replace all fields of a category. (Admin only)</summary>
+            <param name="id">Category ID.</param>
+            <response code="200">Category updated and returned.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Caller is not an Admin.</response>
+            <response code="404">No category with the given ID.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.CategoriesController.Patch(System.Int32,PharmeasyAPI.DTOs.PatchCategoryRequest)">
+            <summary>Partially update a category (only supplied fields are changed). (Admin only)</summary>
+            <param name="id">Category ID.</param>
+            <response code="200">Category updated and returned.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Caller is not an Admin.</response>
+            <response code="404">No category with the given ID.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.CategoriesController.Delete(System.Int32)">
+            <summary>Delete a category by ID. (Admin only)</summary>
+            <param name="id">Category ID.</param>
+            <response code="200">Category deleted.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Caller is not an Admin.</response>
+            <response code="404">No category with the given ID.</response>
+        </member>
+        <member name="T:PharmeasyAPI.Controllers.CouponsController">
+            <summary>Discount coupon management and application.</summary>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.CouponsController.Create(PharmeasyAPI.DTOs.CreateCouponRequest)">
+            <summary>Create a new discount coupon. (Admin only)</summary>
+            <response code="200">Coupon created and returned.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Caller is not an Admin.</response>
+            <response code="409">A coupon with this name already exists.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.CouponsController.GetAll(System.Int32,System.Int32)">
+            <summary>List all coupons including their usage records.</summary>
+            <param name="page">Page number (default 1).</param>
+            <param name="limit">Items per page, 1–100 (default 20).</param>
+            <response code="200">Paginated, alphabetically ordered list of coupons.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.CouponsController.GetById(System.Int32)">
+            <summary>Retrieve a single coupon by ID.</summary>
+            <param name="id">Coupon ID.</param>
+            <response code="200">Coupon found and returned.</response>
+            <response code="404">No coupon with the given ID.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.CouponsController.Patch(System.Int32,PharmeasyAPI.DTOs.PatchCouponRequest)">
+            <summary>Partially update a coupon (only supplied fields are changed). (Admin only)</summary>
+            <param name="id">Coupon ID.</param>
+            <response code="200">Coupon updated and returned.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Caller is not an Admin.</response>
+            <response code="404">No coupon with the given ID.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.CouponsController.Delete(System.Int32)">
+            <summary>Delete a coupon by ID. (Admin only)</summary>
+            <param name="id">Coupon ID.</param>
+            <response code="200">Coupon deleted.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Caller is not an Admin.</response>
+            <response code="404">No coupon with the given ID.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.CouponsController.Apply(PharmeasyAPI.DTOs.ApplyCouponRequest)">
+            <summary>Apply a coupon to the authenticated customer's cart and record usage.</summary>
+            <remarks>Validates the coupon name and the customer's remaining usage allowance before applying the discount.</remarks>
+            <response code="200">Discount amount and new cart total returned.</response>
+            <response code="400">Coupon not applicable or customer/cart not found.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="404">Coupon name not recognised.</response>
+        </member>
+        <member name="T:PharmeasyAPI.Controllers.CovidsController">
+            <summary>COVID-related product/test listings.</summary>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.CovidsController.Create(PharmeasyAPI.DTOs.CreateCategoryItemRequest)">
+            <summary>Create a COVID product/test entry.</summary>
+            <response code="201">Entry created and returned.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.CovidsController.GetAll(System.Int32,System.Int32)">
+            <summary>List all COVID product/test entries.</summary>
+            <param name="page">Page number (default 1).</param>
+            <param name="limit">Items per page, 1–100 (default 20).</param>
+            <response code="200">Paginated list of COVID entries.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.CovidsController.Delete(System.Int32)">
+            <summary>Delete a COVID entry by ID.</summary>
+            <param name="id">Entry ID.</param>
+            <response code="200">Entry deleted and returned.</response>
+            <response code="404">No entry with the given ID.</response>
+        </member>
+        <member name="T:PharmeasyAPI.Controllers.DeliveryChargesController">
+            <summary>Delivery charge rules keyed by postal pincode.</summary>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.DeliveryChargesController.Create(PharmeasyAPI.DTOs.CreateDeliveryChargeRequest)">
+            <summary>Create a delivery charge record for a pincode. (Admin only)</summary>
+            <response code="200">Record created and returned.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Caller is not an Admin.</response>
+            <response code="409">A record for this pincode already exists.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.DeliveryChargesController.GetAll(System.Int32,System.Int32)">
+            <summary>List all delivery charge records ordered by pincode.</summary>
+            <param name="page">Page number (default 1).</param>
+            <param name="limit">Items per page, 1–100 (default 20).</param>
+            <response code="200">Paginated list of delivery charge records.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.DeliveryChargesController.GetById(System.Int32)">
+            <summary>Retrieve a delivery charge record by ID.</summary>
+            <param name="id">Delivery charge record ID.</param>
+            <response code="200">Record found and returned.</response>
+            <response code="404">No record with the given ID.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.DeliveryChargesController.CheckDelivery(System.String)">
+            <summary>Check delivery availability and charge for a specific pincode.</summary>
+            <param name="pincode">The postal pincode to check.</param>
+            <response code="200">Delivery status and charge (charge is null when pincode is unknown).</response>
+            <response code="400">Pincode query parameter is missing.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.DeliveryChargesController.Patch(System.Int32,PharmeasyAPI.DTOs.PatchDeliveryChargeRequest)">
+            <summary>Partially update a delivery charge record. (Admin only)</summary>
+            <param name="id">Delivery charge record ID.</param>
+            <response code="200">Record updated and returned.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Caller is not an Admin.</response>
+            <response code="404">No record with the given ID.</response>
+            <response code="409">Another record already uses the new pincode.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.DeliveryChargesController.Delete(System.Int32)">
+            <summary>Delete a delivery charge record by ID. (Admin only)</summary>
+            <param name="id">Delivery charge record ID.</param>
+            <response code="200">Record deleted.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Caller is not an Admin.</response>
+            <response code="404">No record with the given ID.</response>
+        </member>
+        <member name="T:PharmeasyAPI.Controllers.DoctorsController">
+            <summary>Doctor profile management and customer-facing doctor discovery.</summary>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.DoctorsController.CreateDoctor(PharmeasyAPI.DTOs.CreateDoctorRequest)">
+            <summary>Create a new doctor account and profile. (Admin only)</summary>
+            <remarks>Creates a User with role Doctor and a linked DoctorProfile in a single call.</remarks>
+            <response code="200">Doctor created; returns the profile DTO.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Caller is not an Admin.</response>
+            <response code="409">A user with this email already exists.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.DoctorsController.PatchDoctor(System.Int32,PharmeasyAPI.DTOs.PatchDoctorRequest)">
+            <summary>Partially update a doctor profile. (Admin only)</summary>
+            <param name="id">DoctorProfile ID.</param>
+            <response code="200">Profile updated and returned.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Caller is not an Admin.</response>
+            <response code="404">No doctor profile with the given ID.</response>
+            <response code="409">Another user already uses the supplied email.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.DoctorsController.DeleteDoctor(System.Int32)">
+            <summary>Delete a doctor profile. (Admin only)</summary>
+            <remarks>The underlying user is demoted to Customer role to preserve booking history.</remarks>
+            <param name="id">DoctorProfile ID.</param>
+            <response code="200">Doctor profile removed.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Caller is not an Admin.</response>
+            <response code="404">No doctor profile with the given ID.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.DoctorsController.GetDoctorById(System.Int32)">
+            <summary>Retrieve a single doctor profile by ID. (Admin only)</summary>
+            <param name="id">DoctorProfile ID.</param>
+            <response code="200">Profile found and returned.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Caller is not an Admin.</response>
+            <response code="404">No doctor profile with the given ID.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.DoctorsController.GetAllDoctors(System.Int32,System.Int32)">
+            <summary>List all doctor profiles. (Admin only)</summary>
+            <param name="page">Page number (default 1).</param>
+            <param name="limit">Items per page, 1–100 (default 20).</param>
+            <response code="200">Paginated list of all profiles, newest first.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Caller is not an Admin.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.DoctorsController.GetAllDoctorsForCustomer(System.Int32,System.Int32)">
+            <summary>List all active doctors (summary view for customers). No authentication required.</summary>
+            <param name="page">Page number (default 1).</param>
+            <param name="limit">Items per page, 1–100 (default 20).</param>
+            <response code="200">Paginated, alphabetically ordered list of active doctors with consultation fee.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.DoctorsController.GetDoctorForCustomer(System.Int32)">
+            <summary>Get a doctor's full profile with per-weekday available 30-minute slots. No authentication required.</summary>
+            <remarks>
+            Available slots are computed by subtracting the doctor's unavailability blocks from the full 24-hour day,
+            then splitting each resulting window into 30-minute intervals (e.g. <c>09:00–09:30</c>, <c>09:30–10:00</c>).
+            </remarks>
+            <param name="id">DoctorProfile ID.</param>
+            <response code="200">Doctor detail with weekly availability slots.</response>
+            <response code="404">No active doctor with the given ID.</response>
+        </member>
+        <member name="T:PharmeasyAPI.Controllers.DoctorUnavailabilitiesController">
+            <summary>Manage doctor unavailability blocks used to compute available appointment slots.</summary>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.DoctorUnavailabilitiesController.CreateForDoctor(PharmeasyAPI.DTOs.CreateDoctorUnavailabilityRequest)">
+            <summary>Add an unavailability block for the authenticated doctor's own schedule.</summary>
+            <remarks>Time format: <c>HH:mm-HH:mm</c> (e.g. <c>18:00-21:00</c>). End time must be after start time.</remarks>
+            <response code="200">Unavailability block created and returned.</response>
+            <response code="400">Invalid time format or end time not after start time.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Caller is not a Doctor.</response>
+            <response code="404">No doctor profile linked to the authenticated user.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.DoctorUnavailabilitiesController.CreateForDoctorAdmin(PharmeasyAPI.DTOs.CreateDoctorUnavailabilityAdminRequest)">
+            <summary>Add an unavailability block for any doctor by profile ID. (Admin only)</summary>
+            <remarks>Time format: <c>HH:mm-HH:mm</c> (e.g. <c>18:00-21:00</c>).</remarks>
+            <response code="200">Unavailability block created and returned.</response>
+            <response code="400">Invalid time format.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Caller is not an Admin.</response>
+            <response code="404">No doctor profile with the given ID.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.DoctorUnavailabilitiesController.GetDoctorUnavailabilities(System.Int32,System.Int32)">
+            <summary>List all unavailability blocks for the authenticated doctor.</summary>
+            <param name="page">Page number (default 1).</param>
+            <param name="limit">Items per page, 1–100 (default 20).</param>
+            <response code="200">Paginated unavailability blocks ordered by weekday and start time.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Caller is not a Doctor.</response>
+            <response code="404">No doctor profile linked to the authenticated user.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.DoctorUnavailabilitiesController.GetDoctorUnavailabilitiesAdmin(System.Int32,System.Int32,System.Int32)">
+            <summary>List all unavailability blocks for a specific doctor by profile ID. (Admin only)</summary>
+            <param name="doctorProfileId">DoctorProfile ID.</param>
+            <param name="page">Page number (default 1).</param>
+            <param name="limit">Items per page, 1–100 (default 20).</param>
+            <response code="200">Paginated unavailability blocks ordered by weekday and start time.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Caller is not an Admin.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.DoctorUnavailabilitiesController.GetById(System.Int32)">
+            <summary>Retrieve a single unavailability block by ID. Accessible by the owning doctor or an Admin.</summary>
+            <param name="id">Unavailability block ID.</param>
+            <response code="200">Block found and returned.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Block does not belong to the authenticated doctor.</response>
+            <response code="404">No block with the given ID.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.DoctorUnavailabilitiesController.Patch(System.Int32,PharmeasyAPI.DTOs.PatchDoctorUnavailabilityRequest)">
+            <summary>Partially update an unavailability block. Accessible by the owning doctor or an Admin.</summary>
+            <param name="id">Unavailability block ID.</param>
+            <response code="200">Block updated and returned.</response>
+            <response code="400">Invalid time format.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Block does not belong to the authenticated doctor.</response>
+            <response code="404">No block with the given ID.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.DoctorUnavailabilitiesController.Delete(System.Int32)">
+            <summary>Delete an unavailability block. Accessible by the owning doctor or an Admin.</summary>
+            <param name="id">Unavailability block ID.</param>
+            <response code="200">Block deleted.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Block does not belong to the authenticated doctor.</response>
+            <response code="404">No block with the given ID.</response>
+        </member>
+        <member name="T:PharmeasyAPI.Controllers.HealthcareDataController">
+            <summary>General healthcare informational data entries.</summary>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.HealthcareDataController.Create(PharmeasyAPI.DTOs.CreateHealthcareDataRequest)">
+            <summary>Create a healthcare data entry.</summary>
+            <response code="201">Entry created and returned.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.HealthcareDataController.GetAll(System.Int32,System.Int32)">
+            <summary>List all healthcare data entries.</summary>
+            <param name="page">Page number (default 1).</param>
+            <param name="limit">Items per page, 1–100 (default 20).</param>
+            <response code="200">Paginated list of entries.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.HealthcareDataController.Delete(System.Int32)">
+            <summary>Delete a healthcare data entry by ID.</summary>
+            <param name="id">Entry ID.</param>
+            <response code="200">Entry deleted and returned.</response>
+            <response code="404">No entry with the given ID.</response>
+        </member>
+        <member name="T:PharmeasyAPI.Controllers.HealthcareDevicesController">
+            <summary>Healthcare device product listings.</summary>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.HealthcareDevicesController.Create(PharmeasyAPI.DTOs.CreateCategoryItemRequest)">
+            <summary>Create a healthcare device entry.</summary>
+            <response code="201">Entry created and returned.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.HealthcareDevicesController.GetAll(System.Int32,System.Int32)">
+            <summary>List all healthcare device entries.</summary>
+            <param name="page">Page number (default 1).</param>
+            <param name="limit">Items per page, 1–100 (default 20).</param>
+            <response code="200">Paginated list of entries.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.HealthcareDevicesController.Delete(System.Int32)">
+            <summary>Delete a healthcare device entry by ID.</summary>
+            <param name="id">Entry ID.</param>
+            <response code="200">Entry deleted and returned.</response>
+            <response code="404">No entry with the given ID.</response>
+        </member>
+        <member name="T:PharmeasyAPI.Controllers.HealthFoodAndDrinksController">
+            <summary>Health food and drinks product listings.</summary>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.HealthFoodAndDrinksController.Create(PharmeasyAPI.DTOs.CreateCategoryItemRequest)">
+            <summary>Create a health food or drink entry.</summary>
+            <response code="201">Entry created and returned.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.HealthFoodAndDrinksController.GetAll(System.Int32,System.Int32)">
+            <summary>List all health food and drink entries.</summary>
+            <param name="page">Page number (default 1).</param>
+            <param name="limit">Items per page, 1–100 (default 20).</param>
+            <response code="200">Paginated list of entries.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.HealthFoodAndDrinksController.Delete(System.Int32)">
+            <summary>Delete a health food or drink entry by ID.</summary>
+            <param name="id">Entry ID.</param>
+            <response code="200">Entry deleted and returned.</response>
+            <response code="404">No entry with the given ID.</response>
+        </member>
+        <member name="T:PharmeasyAPI.Controllers.OrdersController">
+            <summary>Order history — view and manage completed product orders.</summary>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.OrdersController.GetAllOrders(System.Int32,System.Int32)">
+            <summary>List every order in the system. (Admin only)</summary>
+            <param name="page">Page number (default 1).</param>
+            <param name="limit">Items per page, 1–100 (default 20).</param>
+            <response code="200">Paginated list of all orders, newest first.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Caller is not an Admin.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.OrdersController.GetOrderByIdAdmin(System.Int32)">
+            <summary>Retrieve a specific order by ID. (Admin only)</summary>
+            <param name="id">Order ID.</param>
+            <response code="200">Order found and returned.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Caller is not an Admin.</response>
+            <response code="404">No order with the given ID.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.OrdersController.GetMyOrders(System.Int32,System.Int32)">
+            <summary>List all orders belonging to the currently authenticated customer.</summary>
+            <param name="page">Page number (default 1).</param>
+            <param name="limit">Items per page, 1–100 (default 20).</param>
+            <response code="200">Paginated list of the customer's orders, newest first.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="404">Customer profile not found.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.OrdersController.GetMyOrderById(System.Int32)">
+            <summary>Retrieve a specific order that belongs to the authenticated customer.</summary>
+            <param name="id">Order ID.</param>
+            <response code="200">Order found and returned.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="404">Order not found or does not belong to this customer.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.OrdersController.DeleteOrder(System.Int32)">
+            <summary>Delete an order. Customers may only delete their own; Admins may delete any.</summary>
+            <param name="id">Order ID.</param>
+            <response code="200">Order deleted.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Order does not belong to this customer.</response>
+            <response code="404">No order with the given ID.</response>
+        </member>
+        <member name="T:PharmeasyAPI.Controllers.ProductCheckoutController">
+            <summary>Product cart checkout and Razorpay webhook handling.</summary>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.ProductCheckoutController.CheckoutProducts(PharmeasyAPI.DTOs.ProductCheckoutRequest)">
+             <summary>Initiate checkout for the authenticated customer's cart and generate a Razorpay payment link.</summary>
+             <remarks>
+             **Flow:**
+             1. Resolves the cart and optionally validates/applies a coupon.
+             2. Creates a <c>CheckoutSession</c> with a snapshot of the cart items.
+             3. Calls the Razorpay API and returns the payment link URL.
+            
+             Orders are only created after Razorpay fires the <c>payment_link.paid</c> webhook.
+             </remarks>
+             <response code="200">Checkout initiated; returns cart summary and Razorpay payment URL.</response>
+             <response code="400">Cart is empty, coupon is invalid, or customer profile missing.</response>
+             <response code="401">Missing or invalid JWT.</response>
+             <response code="500">Razorpay payment link creation failed.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.ProductCheckoutController.RazorpayWebhook">
+             <summary>Razorpay webhook endpoint — confirms payment for product orders and doctor bookings.</summary>
+             <remarks>
+             Razorpay calls this URL after a payment link is paid. The signature in the
+             <c>X-Razorpay-Signature</c> header is verified with HMAC-SHA256 before any action is taken.
+            
+             - For **product** payments: creates Order records and clears the cart.
+             - For **booking** payments: creates the Booking record linked to customer and doctor.
+            
+             Configure this URL in the Razorpay dashboard under **Webhooks**.
+             </remarks>
+             <response code="200">Webhook processed (always returns 200 to Razorpay, even for no-ops).</response>
+             <response code="400">Missing or invalid signature, or malformed payload.</response>
+        </member>
+        <member name="T:PharmeasyAPI.Controllers.ProductsController">
+            <summary>CRUD management for pharmacy products.</summary>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.ProductsController.Create(PharmeasyAPI.DTOs.CreateProductRequest)">
+            <summary>Create a new product. (Admin only)</summary>
+            <response code="200">Product created and returned with its category.</response>
+            <response code="400">Referenced category does not exist.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Caller is not an Admin.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.ProductsController.GetAll(System.String,System.Nullable{System.Int32},System.Int32,System.Int32)">
+            <summary>List all products, with optional keyword search and category filter.</summary>
+            <param name="search">Optional keyword matched against name, summary, and description.</param>
+            <param name="categoryId">Optional category ID to filter results.</param>
+            <param name="page">Page number (default 1).</param>
+            <param name="limit">Items per page, 1–100 (default 20).</param>
+            <response code="200">Paginated, alphabetically ordered list of matching products.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.ProductsController.GetById(System.Int32)">
+            <summary>Retrieve a single product by ID.</summary>
+            <param name="id">Product ID.</param>
+            <response code="200">Product found and returned.</response>
+            <response code="404">No product with the given ID.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.ProductsController.Update(System.Int32,PharmeasyAPI.DTOs.UpdateProductRequest)">
+            <summary>Replace all fields of a product. (Admin only)</summary>
+            <param name="id">Product ID.</param>
+            <response code="200">Product updated and returned.</response>
+            <response code="400">Referenced category does not exist.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Caller is not an Admin.</response>
+            <response code="404">No product with the given ID.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.ProductsController.Patch(System.Int32,PharmeasyAPI.DTOs.PatchProductRequest)">
+            <summary>Partially update a product (only supplied fields are changed). (Admin only)</summary>
+            <param name="id">Product ID.</param>
+            <response code="200">Product updated and returned.</response>
+            <response code="400">Referenced category does not exist.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Caller is not an Admin.</response>
+            <response code="404">No product with the given ID.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.ProductsController.Delete(System.Int32)">
+            <summary>Delete a product by ID. (Admin only)</summary>
+            <param name="id">Product ID.</param>
+            <response code="200">Product deleted.</response>
+            <response code="401">Missing or invalid JWT.</response>
+            <response code="403">Caller is not an Admin.</response>
+            <response code="404">No product with the given ID.</response>
+        </member>
+        <member name="T:PharmeasyAPI.Controllers.ProfileController">
+            <summary>Manages the authenticated user's own profile.</summary>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.ProfileController.GetProfile">
+            <summary>Get the authenticated user's profile, including their Customer or Doctor sub-profile.</summary>
+            <remarks>Pass the JWT in the <c>Authorization: Bearer &lt;token&gt;</c> header.</remarks>
+            <response code="200">Returns user info and role-specific profile data.</response>
+            <response code="401">Missing or invalid JWT.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.ProfileController.CompleteProfile(PharmeasyAPI.DTOs.CompleteProfileRequest)">
+            <summary>Complete the profile of the currently logged-in user.</summary>
+            <remarks>
+            Sets the user's name and phone number and marks the account as no longer new.
+            Should be called once after the first login.
+            </remarks>
+            <response code="200">Profile updated; returns the full user object.</response>
+            <response code="401">Missing or invalid JWT.</response>
+        </member>
+        <member name="T:PharmeasyAPI.Controllers.SkincareController">
+            <summary>Skincare product listings.</summary>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.SkincareController.Create(PharmeasyAPI.DTOs.CreateCategoryItemRequest)">
+            <summary>Create a skincare product entry.</summary>
+            <response code="201">Entry created and returned.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.SkincareController.GetAll(System.Int32,System.Int32)">
+            <summary>List all skincare product entries.</summary>
+            <param name="page">Page number (default 1).</param>
+            <param name="limit">Items per page, 1–100 (default 20).</param>
+            <response code="200">Paginated list of entries.</response>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.SkincareController.Delete(System.Int32)">
+            <summary>Delete a skincare product entry by ID.</summary>
+            <param name="id">Entry ID.</param>
+            <response code="200">Entry deleted and returned.</response>
+            <response code="404">No entry with the given ID.</response>
+        </member>
+        <member name="T:PharmeasyAPI.Migrations.InitialCreate">
+            <inheritdoc />
+        </member>
+        <member name="M:PharmeasyAPI.Migrations.InitialCreate.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:PharmeasyAPI.Migrations.InitialCreate.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:PharmeasyAPI.Migrations.InitialCreate.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:PharmeasyAPI.Migrations.AddCouponUsage">
+            <inheritdoc />
+        </member>
+        <member name="M:PharmeasyAPI.Migrations.AddCouponUsage.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:PharmeasyAPI.Migrations.AddCouponUsage.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:PharmeasyAPI.Migrations.AddCouponUsage.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:PharmeasyAPI.Migrations.AddBookingDetails">
+            <inheritdoc />
+        </member>
+        <member name="M:PharmeasyAPI.Migrations.AddBookingDetails.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:PharmeasyAPI.Migrations.AddBookingDetails.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:PharmeasyAPI.Migrations.AddBookingDetails.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:PharmeasyAPI.Migrations.AddCheckoutSession">
+            <inheritdoc />
+        </member>
+        <member name="M:PharmeasyAPI.Migrations.AddCheckoutSession.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:PharmeasyAPI.Migrations.AddCheckoutSession.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:PharmeasyAPI.Migrations.AddCheckoutSession.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:PharmeasyAPI.Migrations.AddDoctorIsActive">
+            <inheritdoc />
+        </member>
+        <member name="M:PharmeasyAPI.Migrations.AddDoctorIsActive.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:PharmeasyAPI.Migrations.AddDoctorIsActive.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:PharmeasyAPI.Migrations.AddDoctorIsActive.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:PharmeasyAPI.Migrations.FixDoctorIsActiveDefault">
+            <inheritdoc />
+        </member>
+        <member name="M:PharmeasyAPI.Migrations.FixDoctorIsActiveDefault.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:PharmeasyAPI.Migrations.FixDoctorIsActiveDefault.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:PharmeasyAPI.Migrations.FixDoctorIsActiveDefault.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:PharmeasyAPI.Migrations.AddBookingSessionAndConsultationFee">
+            <inheritdoc />
+        </member>
+        <member name="M:PharmeasyAPI.Migrations.AddBookingSessionAndConsultationFee.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:PharmeasyAPI.Migrations.AddBookingSessionAndConsultationFee.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:PharmeasyAPI.Migrations.AddBookingSessionAndConsultationFee.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+    </members>
+</doc>
