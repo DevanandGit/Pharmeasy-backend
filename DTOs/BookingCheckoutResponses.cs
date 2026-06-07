@@ -3,7 +3,7 @@ namespace PharmeasyAPI.DTOs;
 public class BookingResponseDto
 {
     public int Id { get; set; }
-    public DateTime AppointmentDate { get; set; }
+    public DateOnly AppointmentDate { get; set; }
     public string TimeSlot { get; set; } = string.Empty;
     public string PatientName { get; set; } = string.Empty;
     public string PatientNumber { get; set; } = string.Empty;
@@ -42,7 +42,7 @@ public class BookingCheckoutResponse
     public int DoctorProfileId { get; set; }
     public string DoctorName { get; set; } = string.Empty;
     public string TimeSlot { get; set; } = string.Empty;
-    public DateTime AppointmentDate { get; set; }
+    public DateOnly AppointmentDate { get; set; }
     public string PatientName { get; set; } = string.Empty;
     public string PatientNumber { get; set; } = string.Empty;
     public int Age { get; set; }

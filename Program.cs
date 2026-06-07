@@ -45,8 +45,12 @@ builder.Services.AddScoped<OtpService>();
 builder.Services.AddHttpClient();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
+    {
         options.JsonSerializerOptions.ReferenceHandler =
-            System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles);
+            System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.Converters.Add(
+            new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
 builder.Services.AddCors(options =>

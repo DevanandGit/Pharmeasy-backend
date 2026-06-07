@@ -89,7 +89,7 @@ public class BookingsController : ControllerBase
     private static BookingResponseDto MapBooking(PharmeasyAPI.Models.Booking b) => new()
     {
         Id = b.Id,
-        AppointmentDate = b.AppointmentDate,
+        AppointmentDate = DateOnly.FromDateTime(b.AppointmentDate),
         TimeSlot = b.TimeSlot,
         PatientName = b.PatientName,
         PatientNumber = b.PatientNumber,

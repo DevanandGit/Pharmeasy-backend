@@ -83,10 +83,10 @@ public class BookingCheckoutController : ControllerBase
             PatientName = request.PatientName,
             PatientNumber = request.PatientNumber,
             Age = request.Age,
-            Gender = request.Gender,
+            Gender = request.Gender.ToString(),
             PrescriptionUpload = request.PrescriptionUpload,
             Description = request.Description,
-            ModeOfConsult = request.ModeOfConsult
+            ModeOfConsult = request.ModeOfConsult.ToString()
         };
 
         var session = new BookingSession
@@ -118,14 +118,14 @@ public class BookingCheckoutController : ControllerBase
             DoctorProfileId = doctor.Id,
             DoctorName = doctor.User.Name ?? string.Empty,
             TimeSlot = request.TimeSlot,
-            AppointmentDate = snapshot.AppointmentDate,
+            AppointmentDate = DateOnly.FromDateTime(request.AppointmentDate),
             PatientName = request.PatientName,
             PatientNumber = request.PatientNumber,
             Age = request.Age,
-            Gender = request.Gender,
+            Gender = request.Gender.ToString(),
             PrescriptionUpload = request.PrescriptionUpload,
             Description = request.Description,
-            ModeOfConsult = request.ModeOfConsult,
+            ModeOfConsult = request.ModeOfConsult.ToString(),
             ConsultationFee = doctor.ConsultationFee,
             PaymentLinkUrl = razorpayResponse.ShortUrl,
             PaymentLinkId = razorpayResponse.LinkId,

@@ -637,6 +637,12 @@
             <response code="200">Entry deleted and returned.</response>
             <response code="404">No entry with the given ID.</response>
         </member>
+        <member name="P:PharmeasyAPI.DTOs.BookingCheckoutRequest.TimeSlot">
+            <summary>Time slot in HH:mm-HH:mm format, e.g. "09:00-09:30".</summary>
+        </member>
+        <member name="P:PharmeasyAPI.DTOs.BookingCheckoutRequest.AppointmentDate">
+            <summary>Date of the appointment in ISO 8601 format, e.g. "2024-12-25T00:00:00.000Z".</summary>
+        </member>
         <member name="T:PharmeasyAPI.Migrations.InitialCreate">
             <inheritdoc />
         </member>
