@@ -121,14 +121,15 @@ public class CartsController : ControllerBase
     }
 
     /// <summary>Retrieve the current user's cart with all items and the recalculated total.</summary>
-    /// <response code="200">Cart with items and total price.</response>
+    /// <param name="couponName">Optional coupon code to preview the discounted total (coupon is NOT applied or recorded).</param>
+    /// <response code="200">Cart with items and total price. When a valid coupon is supplied, includes a <c>couponPreview</c> object with the discount breakdown.</response>
     /// <response code="401">Missing or invalid JWT.</response>
     /// <response code="404">No active cart for this user.</response>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetCart()
+    public async Task<IActionResult> GetCart([FromQuery] string? couponName)
     {
         var userIdClaim = User.FindFirst("userId")?.Value;
         if (userIdClaim is null || !int.TryParse(userIdClaim, out int userId))
@@ -147,7 +148,40 @@ public class CartsController : ControllerBase
             .ThenInclude(ci => ci.Product)
             .FirstOrDefaultAsync(c => c.Id == cart.Id);
 
-        return Ok(cart);
+        if (string.IsNullOrWhiteSpace(couponName))
+            return Ok(cart);
+
+        var coupon = await _db.Coupons.FirstOrDefaultAsync(c => c.CouponName == couponName);
+        if (coupon is null)
+            return Ok(new { cart, couponPreview = new { applicable = false, message = "Coupon not found." } });
+
+        var customerProfile = await _db.CustomerProfiles.FirstOrDefaultAsync(cp => cp.UserId == userId);
+        if (customerProfile is null)
+            return Ok(new { cart, couponPreview = new { applicable = false, message = "Customer profile not found." } });
+
+        var usageCount = await _db.CouponUsages.CountAsync(cu =>
+            cu.CouponId == coupon.Id && cu.CustomerProfileId == customerProfile.Id);
+
+        if (coupon.UsageLimit > 0 && usageCount >= coupon.UsageLimit)
+            return Ok(new { cart, couponPreview = new { applicable = false, message = "Coupon usage limit reached." } });
+
+        decimal discountAmount = coupon.CouponType == CouponType.Percentage
+            ? Math.Round(cart!.TotalPrice * (coupon.Value / 100m), 2)
+            : coupon.Value;
+
+        decimal totalAfterDiscount = Math.Max(cart!.TotalPrice - discountAmount, 0m);
+
+        return Ok(new
+        {
+            cart,
+            couponPreview = new
+            {
+                applicable = true,
+                couponName = coupon.CouponName,
+                discountAmount,
+                totalAfterDiscount
+            }
+        });
     }
 
     /// <summary>Delete the current user's entire cart and all its items.</summary>

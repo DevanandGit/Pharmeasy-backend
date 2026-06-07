@@ -126,9 +126,10 @@
             <response code="401">Missing or invalid JWT.</response>
             <response code="404">Cart or product not found.</response>
         </member>
-        <member name="M:PharmeasyAPI.Controllers.CartsController.GetCart">
+        <member name="M:PharmeasyAPI.Controllers.CartsController.GetCart(System.String)">
             <summary>Retrieve the current user's cart with all items and the recalculated total.</summary>
-            <response code="200">Cart with items and total price.</response>
+            <param name="couponName">Optional coupon code to preview the discounted total (coupon is NOT applied or recorded).</param>
+            <response code="200">Cart with items and total price. When a valid coupon is supplied, includes a <c>couponPreview</c> object with the discount breakdown.</response>
             <response code="401">Missing or invalid JWT.</response>
             <response code="404">No active cart for this user.</response>
         </member>

@@ -228,9 +228,31 @@
                     "Blogs"
                 ],
                 "summary": "List all blog posts, newest first.",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number (default 1).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Items per page, 1–100 (default 20).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 20
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "List of blog posts."
+                        "description": "Paginated list of blog posts."
                     }
                 }
             }
@@ -461,6 +483,136 @@
                 }
             }
         },
+        "/bookings/customer": {
+            "get": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "List the authenticated customer's bookings, newest appointment first.",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number (default 1).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Items per page, 1–100 (default 20).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 20
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated list of the customer's bookings."
+                    },
+                    "401": {
+                        "description": "Missing or invalid JWT.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Caller is not a Customer.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Customer profile not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/bookings/doctor": {
+            "get": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "List the authenticated doctor's bookings, newest appointment first.",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number (default 1).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Items per page, 1–100 (default 20).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 20
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated list of the doctor's bookings."
+                    },
+                    "401": {
+                        "description": "Missing or invalid JWT.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Caller is not a Doctor.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Doctor profile not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/cart/add": {
             "post": {
                 "tags": [
@@ -686,9 +838,31 @@
                     "Categories"
                 ],
                 "summary": "Retrieve all categories, each including their associated products.",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number (default 1).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Items per page, 1–100 (default 20).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 20
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Ordered list of categories."
+                        "description": "Paginated, alphabetically ordered list of categories."
                     }
                 }
             }
@@ -991,9 +1165,31 @@
                     "Coupons"
                 ],
                 "summary": "List all coupons including their usage records.",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number (default 1).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Items per page, 1–100 (default 20).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 20
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Alphabetically ordered list of coupons."
+                        "description": "Paginated, alphabetically ordered list of coupons."
                     }
                 }
             }
@@ -1257,9 +1453,31 @@
                     "Covids"
                 ],
                 "summary": "List all COVID product/test entries.",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number (default 1).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Items per page, 1–100 (default 20).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 20
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "List of COVID entries."
+                        "description": "Paginated list of COVID entries."
                     }
                 }
             }
@@ -1365,9 +1583,31 @@
                     "DeliveryCharges"
                 ],
                 "summary": "List all delivery charge records ordered by pincode.",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number (default 1).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Items per page, 1–100 (default 20).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 20
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "List of delivery charge records."
+                        "description": "Paginated list of delivery charge records."
                     }
                 }
             }
@@ -1642,9 +1882,31 @@
                     "Doctors"
                 ],
                 "summary": "List all doctor profiles. (Admin only)",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number (default 1).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Items per page, 1–100 (default 20).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 20
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "All profiles, newest first."
+                        "description": "Paginated list of all profiles, newest first."
                     },
                     "401": {
                         "description": "Missing or invalid JWT.",
@@ -1866,9 +2128,31 @@
                     "Doctors"
                 ],
                 "summary": "List all active doctors (summary view for customers). No authentication required.",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number (default 1).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Items per page, 1–100 (default 20).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 20
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Alphabetically ordered list of active doctors with consultation fee."
+                        "description": "Paginated, alphabetically ordered list of active doctors with consultation fee."
                     }
                 }
             }
@@ -1986,9 +2270,31 @@
                     "DoctorUnavailabilities"
                 ],
                 "summary": "List all unavailability blocks for the authenticated doctor.",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number (default 1).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Items per page, 1–100 (default 20).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 20
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Unavailability blocks ordered by weekday and start time."
+                        "description": "Paginated unavailability blocks ordered by weekday and start time."
                     },
                     "401": {
                         "description": "Missing or invalid JWT.",
@@ -2112,11 +2418,31 @@
                             "type": "integer",
                             "format": "int32"
                         }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number (default 1).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Items per page, 1–100 (default 20).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 20
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Unavailability blocks ordered by weekday and start time."
+                        "description": "Paginated unavailability blocks ordered by weekday and start time."
                     },
                     "401": {
                         "description": "Missing or invalid JWT.",
@@ -2367,9 +2693,31 @@
                     "HealthcareData"
                 ],
                 "summary": "List all healthcare data entries.",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number (default 1).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Items per page, 1–100 (default 20).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 20
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "List of entries."
+                        "description": "Paginated list of entries."
                     }
                 }
             }
@@ -2445,9 +2793,31 @@
                     "HealthcareDevices"
                 ],
                 "summary": "List all healthcare device entries.",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number (default 1).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Items per page, 1–100 (default 20).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 20
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "List of entries."
+                        "description": "Paginated list of entries."
                     }
                 }
             }
@@ -2523,9 +2893,31 @@
                     "HealthFoodAndDrinks"
                 ],
                 "summary": "List all health food and drink entries.",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number (default 1).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Items per page, 1–100 (default 20).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 20
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "List of entries."
+                        "description": "Paginated list of entries."
                     }
                 }
             }
@@ -2571,9 +2963,31 @@
                     "Orders"
                 ],
                 "summary": "List every order in the system. (Admin only)",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number (default 1).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Items per page, 1–100 (default 20).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 20
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "All orders, newest first."
+                        "description": "Paginated list of all orders, newest first."
                     },
                     "401": {
                         "description": "Missing or invalid JWT.",
@@ -2659,9 +3073,31 @@
                     "Orders"
                 ],
                 "summary": "List all orders belonging to the currently authenticated customer.",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number (default 1).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Items per page, 1–100 (default 20).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 20
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Customer's orders, newest first."
+                        "description": "Paginated list of the customer's orders, newest first."
                     },
                     "401": {
                         "description": "Missing or invalid JWT.",
@@ -2947,11 +3383,31 @@
                             "type": "integer",
                             "format": "int32"
                         }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number (default 1).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Items per page, 1–100 (default 20).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 20
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Alphabetically ordered list of matching products."
+                        "description": "Paginated, alphabetically ordered list of matching products."
                     }
                 }
             }
@@ -3208,7 +3664,31 @@
                 }
             }
         },
-        "/complete-profile": {
+        "/profile": {
+            "get": {
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Get the authenticated user's profile, including their Customer or Doctor sub-profile.",
+                "description": "Pass the JWT in the `Authorization: Bearer \u003Ctoken\u003E` header.",
+                "responses": {
+                    "200": {
+                        "description": "Returns user info and role-specific profile data."
+                    },
+                    "401": {
+                        "description": "Missing or invalid JWT.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/profile/complete-profile": {
             "post": {
                 "tags": [
                     "Profile"
@@ -3287,9 +3767,31 @@
                     "Skincare"
                 ],
                 "summary": "List all skincare product entries.",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number (default 1).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Items per page, 1–100 (default 20).",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 20
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "List of entries."
+                        "description": "Paginated list of entries."
                     }
                 }
             }

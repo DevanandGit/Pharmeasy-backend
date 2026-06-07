@@ -97,6 +97,14 @@ public class AuthController : ControllerBase
         user.OtpExpiresAt = null;
         user.Role = role;
         user.UpdatedAt = DateTime.UtcNow;
+
+        if (role == UserRole.Customer)
+        {
+            var profileExists = await _db.CustomerProfiles.AnyAsync(cp => cp.UserId == user.Id);
+            if (!profileExists)
+                _db.CustomerProfiles.Add(new CustomerProfile { UserId = user.Id });
+        }
+
         await _db.SaveChangesAsync();
 
         var token = _jwt.GenerateToken(user.Id, user.Email, role.ToString());

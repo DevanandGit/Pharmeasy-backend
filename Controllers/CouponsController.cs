@@ -154,7 +154,12 @@ public class CouponsController : ControllerBase
         if (coupon is null) return NotFound(new { message = "Coupon not found." });
 
         var customerProfile = await _db.CustomerProfiles.FirstOrDefaultAsync(cp => cp.UserId == userId);
-        if (customerProfile is null) return BadRequest(new { message = "Customer profile not found." });
+        if (customerProfile is null)
+        {
+            customerProfile = new CustomerProfile { UserId = userId };
+            _db.CustomerProfiles.Add(customerProfile);
+            await _db.SaveChangesAsync();
+        }
 
         var usageCount = await _db.CouponUsages.CountAsync(cu => cu.CouponId == coupon.Id && cu.CustomerProfileId == customerProfile.Id);
         if (coupon.UsageLimit > 0 && usageCount >= coupon.UsageLimit)

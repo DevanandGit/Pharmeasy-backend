@@ -76,15 +76,20 @@ public class ProductCheckoutController : ControllerBase
         decimal discountAmount = 0m;
         Coupon? coupon = null;
 
+        // Ensure customer profile exists
+        var customerProfile = await _db.CustomerProfiles.FirstOrDefaultAsync(cp => cp.UserId == userId);
+        if (customerProfile is null)
+        {
+            customerProfile = new CustomerProfile { UserId = userId };
+            _db.CustomerProfiles.Add(customerProfile);
+            await _db.SaveChangesAsync();
+        }
+
         if (!string.IsNullOrWhiteSpace(request.CouponName))
         {
             coupon = await _db.Coupons.FirstOrDefaultAsync(c => c.CouponName == request.CouponName);
             if (coupon is null)
                 return BadRequest(new { message = "coupon cannot be applicable" });
-
-            var customerProfile = await _db.CustomerProfiles.FirstOrDefaultAsync(cp => cp.UserId == userId);
-            if (customerProfile is null)
-                return BadRequest(new { message = "Customer profile not found." });
 
             var usageCount = await _db.CouponUsages.CountAsync(cu => cu.CouponId == coupon.Id && cu.CustomerProfileId == customerProfile.Id);
             if (coupon.UsageLimit > 0 && usageCount >= coupon.UsageLimit)
@@ -102,7 +107,6 @@ public class ProductCheckoutController : ControllerBase
                 CustomerProfileId = customerProfile.Id,
                 UsedAt = DateTime.UtcNow
             });
-            await _db.SaveChangesAsync();
         }
 
         var totalAmount = Math.Max(subtotal - discountAmount, 0m);
@@ -130,6 +134,23 @@ public class ProductCheckoutController : ControllerBase
         session.PaymentLinkUrl = razorpayResponse.ShortUrl;
         session.Status = "LinkCreated";
         session.UpdatedAt = DateTime.UtcNow;
+
+        foreach (var item in products)
+        {
+            _db.Orders.Add(new Order
+            {
+                CustomerProfileId = customerProfile.Id,
+                ProductId = item.ProductId,
+                Quantity = item.Quantity,
+                PurchasePrice = item.UnitPrice,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            });
+        }
+
+        _db.CartItems.RemoveRange(cart.CartItems);
+        _db.Carts.Remove(cart);
+
         await _db.SaveChangesAsync();
 
         return Ok(new ProductCheckoutResponse
@@ -234,23 +255,6 @@ public class ProductCheckoutController : ControllerBase
         var session = await _db.Set<CheckoutSession>().FirstOrDefaultAsync(s => s.PaymentLinkId == paymentLinkId);
         if (session is null) return Ok();
         if (session.Status == "Paid") return Ok();
-
-        var items = JsonSerializer.Deserialize<List<CheckoutProductDto>>(session.CartItemsSnapshot) ?? new List<CheckoutProductDto>();
-        var customerProfile = await _db.CustomerProfiles.FirstOrDefaultAsync(cp => cp.User!.Id == session.UserId);
-        if (customerProfile is null) return BadRequest();
-
-        foreach (var item in items)
-        {
-            _db.Orders.Add(new Order
-            {
-                CustomerProfileId = customerProfile.Id,
-                ProductId = item.ProductId,
-                Quantity = item.Quantity,
-                PurchasePrice = item.UnitPrice,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            });
-        }
 
         var cart = await _db.Carts.Include(c => c.CartItems).FirstOrDefaultAsync(c => c.Id == session.CartId);
         if (cart is not null)
