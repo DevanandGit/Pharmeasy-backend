@@ -2967,6 +2967,78 @@
                 }
             }
         },
+        "/images/upload": {
+            "post": {
+                "tags": [
+                    "ImageUpload"
+                ],
+                "summary": "Upload an image file and receive its public URL path.",
+                "description": "Send a **multipart/form-data** request with a single field named `image`.\r\nAllowed types: jpg, jpeg, png, gif, webp. Max size: 10 MB.\r\n            \r\nThe returned `imageUrl` (e.g. `/images/abc123.jpg`) can be stored\r\ndirectly in the `image` field when creating or updating a product or category.",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "Image": {
+                                        "type": "string",
+                                        "description": "The image file to upload (jpg, jpeg, png, gif, webp — max 10 MB).",
+                                        "format": "binary"
+                                    }
+                                }
+                            },
+                            "encoding": {
+                                "Image": {
+                                    "style": "form"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Image uploaded successfully; returns the public URL path.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ImageUploadResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "No file provided, unsupported file type, or file exceeds 10 MB.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ImageUploadErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid JWT.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Caller is not an Admin.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/orders/admin": {
             "get": {
                 "tags": [
@@ -3895,39 +3967,45 @@
                     },
                     "timeSlot": {
                         "minLength": 1,
-                        "type": "string"
+                        "type": "string",
+                        "description": "Time slot in HH:mm-HH:mm format, e.g. \"09:00-09:30\"."
                     },
                     "appointmentDate": {
                         "type": "string",
+                        "description": "Date of the appointment in ISO 8601 format, e.g. \"2024-12-25T00:00:00.000Z\".",
                         "format": "date-time"
                     },
                     "patientName": {
-                        "minLength": 1,
+                        "maxLength": 100,
+                        "minLength": 2,
                         "type": "string"
                     },
                     "patientNumber": {
                         "minLength": 1,
+                        "pattern": "^\\+?[0-9\\s\\-]{7,15}$",
                         "type": "string"
                     },
                     "age": {
+                        "maximum": 150,
+                        "minimum": 1,
                         "type": "integer",
                         "format": "int32"
                     },
                     "gender": {
-                        "minLength": 1,
-                        "type": "string"
+                        "$ref": "#/components/schemas/Gender"
+                    },
+                    "modeOfConsult": {
+                        "$ref": "#/components/schemas/ConsultMode"
                     },
                     "prescriptionUpload": {
                         "type": "string",
                         "nullable": true
                     },
                     "description": {
+                        "maxLength": 1000,
+                        "minLength": 0,
                         "type": "string",
                         "nullable": true
-                    },
-                    "modeOfConsult": {
-                        "minLength": 1,
-                        "type": "string"
                     }
                 },
                 "additionalProperties": false
@@ -3951,13 +4029,20 @@
                 },
                 "additionalProperties": false
             },
+            "ConsultMode": {
+                "enum": [
+                    "Video",
+                    "Audio",
+                    "InPerson"
+                ],
+                "type": "string"
+            },
             "CouponType": {
                 "enum": [
-                    0,
-                    1
+                    "Percentage",
+                    "Amount"
                 ],
-                "type": "integer",
-                "format": "int32"
+                "type": "string"
             },
             "CreateBlogRequest": {
                 "required": [
@@ -4009,6 +4094,10 @@
                     "categoryName": {
                         "minLength": 1,
                         "type": "string"
+                    },
+                    "image": {
+                        "type": "string",
+                        "nullable": true
                     }
                 },
                 "additionalProperties": false
@@ -4236,9 +4325,45 @@
                         "type": "string",
                         "nullable": true
                     },
+                    "image": {
+                        "type": "string",
+                        "nullable": true
+                    },
                     "categoryId": {
                         "type": "integer",
                         "format": "int32"
+                    }
+                },
+                "additionalProperties": false
+            },
+            "Gender": {
+                "enum": [
+                    "Male",
+                    "Female",
+                    "Other"
+                ],
+                "type": "string"
+            },
+            "ImageUploadErrorResponse": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "description": "Human-readable error description.",
+                        "nullable": true,
+                        "example": "Unsupported file type '.pdf'. Allowed: jpg, jpeg, png, gif, webp."
+                    }
+                },
+                "additionalProperties": false
+            },
+            "ImageUploadResponse": {
+                "type": "object",
+                "properties": {
+                    "imageUrl": {
+                        "type": "string",
+                        "description": "Public URL path to the uploaded image.",
+                        "nullable": true,
+                        "example": "/images/3f2504e0-4f89-11d3-9a0c-0305e82c3301.jpg"
                     }
                 },
                 "additionalProperties": false
@@ -4261,6 +4386,10 @@
                 "type": "object",
                 "properties": {
                     "categoryName": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "image": {
                         "type": "string",
                         "nullable": true
                     }
@@ -4427,6 +4556,10 @@
                         "type": "string",
                         "nullable": true
                     },
+                    "image": {
+                        "type": "string",
+                        "nullable": true
+                    },
                     "categoryId": {
                         "type": "integer",
                         "format": "int32",
@@ -4513,6 +4646,10 @@
                     "categoryName": {
                         "minLength": 1,
                         "type": "string"
+                    },
+                    "image": {
+                        "type": "string",
+                        "nullable": true
                     }
                 },
                 "additionalProperties": false
@@ -4573,6 +4710,10 @@
                         "type": "string",
                         "nullable": true
                     },
+                    "image": {
+                        "type": "string",
+                        "nullable": true
+                    },
                     "categoryId": {
                         "type": "integer",
                         "format": "int32"
@@ -4602,16 +4743,15 @@
             },
             "Weekday": {
                 "enum": [
-                    0,
-                    1,
-                    2,
-                    3,
-                    4,
-                    5,
-                    6
+                    "Monday",
+                    "Tuesday",
+                    "Wednesday",
+                    "Thursday",
+                    "Friday",
+                    "Saturday",
+                    "Sunday"
                 ],
-                "type": "integer",
-                "format": "int32"
+                "type": "string"
             }
         },
         "securitySchemes": {

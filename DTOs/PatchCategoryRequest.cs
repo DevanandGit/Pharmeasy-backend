@@ -5,4 +5,5 @@ namespace PharmeasyAPI.DTOs;
 public class PatchCategoryRequest
 {
     public string? CategoryName { get; set; }
+    public string? Image { get; set; }
 }

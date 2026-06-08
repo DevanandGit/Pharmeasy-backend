@@ -476,6 +476,34 @@
             <response code="200">Entry deleted and returned.</response>
             <response code="404">No entry with the given ID.</response>
         </member>
+        <member name="T:PharmeasyAPI.Controllers.ImageUploadController">
+            <summary>Upload images and serve them as static files.</summary>
+        </member>
+        <member name="M:PharmeasyAPI.Controllers.ImageUploadController.Upload(PharmeasyAPI.Controllers.ImageUploadRequest)">
+             <summary>Upload an image file and receive its public URL path.</summary>
+             <remarks>
+             Send a **multipart/form-data** request with a single field named <c>image</c>.
+             Allowed types: jpg, jpeg, png, gif, webp. Max size: 10 MB.
+            
+             The returned <c>imageUrl</c> (e.g. <c>/images/abc123.jpg</c>) can be stored
+             directly in the <c>image</c> field when creating or updating a product or category.
+             </remarks>
+             <response code="200">Image uploaded successfully; returns the public URL path.</response>
+             <response code="400">No file provided, unsupported file type, or file exceeds 10 MB.</response>
+             <response code="401">Missing or invalid JWT.</response>
+             <response code="403">Caller is not an Admin.</response>
+        </member>
+        <member name="P:PharmeasyAPI.Controllers.ImageUploadRequest.Image">
+            <summary>The image file to upload (jpg, jpeg, png, gif, webp — max 10 MB).</summary>
+        </member>
+        <member name="P:PharmeasyAPI.Controllers.ImageUploadResponse.ImageUrl">
+            <summary>Public URL path to the uploaded image.</summary>
+            <example>/images/3f2504e0-4f89-11d3-9a0c-0305e82c3301.jpg</example>
+        </member>
+        <member name="P:PharmeasyAPI.Controllers.ImageUploadErrorResponse.Message">
+            <summary>Human-readable error description.</summary>
+            <example>Unsupported file type '.pdf'. Allowed: jpg, jpeg, png, gif, webp.</example>
+        </member>
         <member name="T:PharmeasyAPI.Controllers.OrdersController">
             <summary>Order history — view and manage completed product orders.</summary>
         </member>
@@ -725,6 +753,18 @@
             <inheritdoc />
         </member>
         <member name="M:PharmeasyAPI.Migrations.AddBookingSessionAndConsultationFee.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:PharmeasyAPI.Migrations.AddImageToProductAndCategory">
+            <inheritdoc />
+        </member>
+        <member name="M:PharmeasyAPI.Migrations.AddImageToProductAndCategory.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:PharmeasyAPI.Migrations.AddImageToProductAndCategory.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:PharmeasyAPI.Migrations.AddImageToProductAndCategory.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
     </members>

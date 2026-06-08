@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PharmeasyAPI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+030eb7bd3a32a399d58da6263b30630738f732c2")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2db05dcdd891a8ae7d8c5d3990845eb28bbee255")]
 [assembly: System.Reflection.AssemblyProductAttribute("PharmeasyAPI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PharmeasyAPI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

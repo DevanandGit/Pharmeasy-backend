@@ -16,5 +16,6 @@ public class PatchProductRequest
     public string? StorageDisposal { get; set; }
     public string? Dosage { get; set; }
     public string? ModeOfAction { get; set; }
+    public string? Image { get; set; }
     public int? CategoryId { get; set; }
 }

@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using PharmeasyAPI.Data;
@@ -127,6 +128,15 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.UseCors();
+
+var imagesPath = Path.Combine(app.Environment.ContentRootPath, "images");
+Directory.CreateDirectory(imagesPath);
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(imagesPath),
+    RequestPath = "/images"
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 

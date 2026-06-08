@@ -57,6 +57,7 @@ public class ProductsController : ControllerBase
             StorageDisposal = req.StorageDisposal,
             Dosage = req.Dosage,
             ModeOfAction = req.ModeOfAction,
+            Image = req.Image,
             CategoryId = req.CategoryId,
             UserId = userId
         };
@@ -155,6 +156,7 @@ public class ProductsController : ControllerBase
         product.StorageDisposal = req.StorageDisposal;
         product.Dosage = req.Dosage;
         product.ModeOfAction = req.ModeOfAction;
+        product.Image = req.Image;
         product.CategoryId = req.CategoryId;
         product.UpdatedAt = DateTime.UtcNow;
 
@@ -205,6 +207,7 @@ public class ProductsController : ControllerBase
         if (!string.IsNullOrWhiteSpace(req.StorageDisposal)) product.StorageDisposal = req.StorageDisposal;
         if (!string.IsNullOrWhiteSpace(req.Dosage)) product.Dosage = req.Dosage;
         if (!string.IsNullOrWhiteSpace(req.ModeOfAction)) product.ModeOfAction = req.ModeOfAction;
+        if (req.Image is not null) product.Image = req.Image;
 
         product.UpdatedAt = DateTime.UtcNow;
 

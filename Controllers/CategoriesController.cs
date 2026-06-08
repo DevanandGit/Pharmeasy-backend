@@ -32,7 +32,7 @@ public class CategoriesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> Create([FromBody] CreateCategoryRequest req)
     {
-        var category = new Category { CategoryName = req.CategoryName };
+        var category = new Category { CategoryName = req.CategoryName, Image = req.Image };
         _db.Categories.Add(category);
         await _db.SaveChangesAsync();
         return Ok(category);
@@ -87,6 +87,7 @@ public class CategoriesController : ControllerBase
         if (category is null)
             return NotFound(new { message = "Category not found." });
         category.CategoryName = req.CategoryName;
+        category.Image = req.Image;
         category.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
         return Ok(category);
@@ -111,6 +112,8 @@ public class CategoriesController : ControllerBase
             return NotFound(new { message = "Category not found." });
         if (!string.IsNullOrWhiteSpace(req.CategoryName))
             category.CategoryName = req.CategoryName;
+        if (req.Image is not null)
+            category.Image = req.Image;
         category.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
         return Ok(category);

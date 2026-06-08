@@ -15,6 +15,7 @@ public class Product
     public string StorageDisposal { get; set; } = string.Empty;
     public string Dosage { get; set; } = string.Empty;
     public string ModeOfAction { get; set; } = string.Empty;
+    public string Image { get; set; } = string.Empty;
     public int UserId { get; set; }
     public int CategoryId { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
